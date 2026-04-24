@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Saviez-Vous" />
+  <meta name="theme-color" content="#0c0c0c" />
+  <title>Est-ce que vous le saviez-vous ?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0c0c;
+      --bg2: #111;
+      --border: #1e1e1e;
+      --gold: #c9973a;
+      --gold-light: #e0c47a;
+      --text: #f0ede8;
+      --text-muted: #777;
+      --text-dim: #444;
+      --body-text: #b8b4ac;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+    body { padding-top: var(--safe-top); }
+
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin     { to { transform: rotate(360deg); } }
+    @keyframes shimmer  { 0%,100% { opacity:.4; } 50% { opacity:1; } }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 9px;
+      background: none; border: none; color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px; font-weight: 600; letter-spacing: .18em;
+      cursor: pointer;
+    }
+    .nav-logo span { color: var(--gold); font-size: 13px; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-btn {
+      background: none; border: none; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      padding: 6px 12px; cursor: pointer; border-radius: 6px;
+      opacity: .35; transition: opacity .15s;
+    }
+    .nav-btn.active { opacity: 1; }
+
+    /* ── PAGE ── */
+    .page { max-width: 660px; margin: 0 auto; padding: 52px 20px calc(80px + var(--safe-bot)); }
+    .view { animation: fadeUp .4s ease; }
+
+    /* ── SETUP (clé API) ── */
+    #setup-view { display: flex; flex-direction: column; gap: 28px; }
+    .setup-icon { font-size: 48px; }
+    .setup-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 6vw, 2.6rem); font-weight: 900; line-height: 1.15; }
+    .setup-desc { font-size: 15px; color: var(--text-muted); line-height: 1.75; font-weight: 300; }
+    .setup-input-wrap { display: flex; flex-direction: column; gap: 10px; }
+    .setup-input-wrap label { font-size: 12px; color: var(--gold); letter-spacing: .12em; font-weight: 600; }
+    .setup-input {
+      width: 100%; background: var(--bg2); border: 1px solid #2a2a2a;
+      border-radius: 10px; padding: 14px 16px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+      transition: border-color .2s;
+    }
+    .setup-input:focus { border-color: var(--gold); }
+    .setup-hint { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+    .setup-hint a { color: var(--gold); }
+    .btn-primary {
+      background: var(--gold); color: #0c0c0c;
+      border: none; border-radius: 10px; padding: 14px 24px;
+      font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: opacity .15s; width: 100%;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── HOME ── */
+    .eyebrow { font-size: 11px; letter-spacing: .2em; color: var(--gold); font-weight: 600; margin-bottom: 20px; }
+    .main-title { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 8vw, 3.4rem); font-weight: 900; line-height: 1.1; margin-bottom: 18px; }
+    .main-title em { font-style: italic; font-weight: 700; }
+    .main-sub { font-size: 15px; color: var(--text-muted); line-height: 1.75; font-weight: 300; margin-bottom: 44px; }
+
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 36px; }
+    .cat-btn {
+      background: rgba(255,255,255,.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--text); cursor: pointer;
+      transition: background .18s, transform .18s, border-color .18s;
+      animation: fadeUp .4s ease both;
+    }
+    .cat-btn:hover:not(:disabled) { background: rgba(255,255,255,.07); transform: translateY(-3px); border-color: #333; }
+    .cat-btn:disabled { opacity: .25; cursor: not-allowed; }
+    .cat-btn.loading-this { opacity: 1 !important; }
+    .cat-icon { font-size: 28px; line-height: 1; }
+    .cat-icon.spinning { display: inline-block; animation: spin .7s linear infinite; }
+    .cat-label { font-size: 12px; font-weight: 500; color: #888; text-align: center; }
+
+    .loading-row { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 16px 0; }
+    .spinner { width: 20px; height: 20px; border: 2px solid #222; border-top: 2px solid var(--gold); border-radius: 50%; animation: spin .7s linear infinite; }
+
+    .last-card {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(201,151,58,.07); border: 1px solid rgba(201,151,58,.18);
+      border-radius: 12px; padding: 16px 18px; cursor: pointer; margin-top: 8px;
+      transition: background .15s;
+    }
+    .last-card:hover { background: rgba(201,151,58,.12); }
+    .last-tag { font-size: 10px; color: var(--gold); letter-spacing: .15em; font-weight: 600; white-space: nowrap; }
+    .last-title { flex: 1; font-size: 14px; color: #e8e4dd; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .last-arrow { color: var(--gold); font-size: 18px; flex-shrink: 0; }
+
+    .error-box { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); border-radius: 10px; padding: 14px 18px; font-size: 14px; color: #f87171; margin-bottom: 24px; }
+
+    /* ── LESSON ── */
+    .lesson-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
+    .cat-pill { font-size: 11px; letter-spacing: .13em; color: #777; font-weight: 500; text-transform: uppercase; }
+    .diff-pill { font-size: 11px; letter-spacing: .1em; font-weight: 600; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+    .lesson-date { font-size: 12px; color: #333; margin-left: auto; }
+
+    .lesson-title { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 6vw, 2.4rem); font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
+    .lesson-sub { font-size: 16px; color: #888; line-height: 1.7; font-style: italic; font-family: 'Playfair Display', serif; margin-bottom: 24px; }
+
+    .keywords { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; }
+    .kw { font-size: 11px; background: #181818; border: 1px solid #252525; border-radius: 4px; padding: 4px 10px; color: #555; letter-spacing: .07em; }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+    .block { margin-bottom: 40px; }
+    .block-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .block-num { font-size: 11px; color: var(--gold); font-weight: 700; letter-spacing: .1em; }
+    .block-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
+    .block-body { padding-left: 36px; font-size: 15px; line-height: 1.85; color: var(--body-text); font-weight: 300; }
+    .block-body p + p { margin-top: 14px; }
+
+    .facts-list { padding-left: 36px; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .fact-item { display: flex; gap: 12px; font-size: 15px; color: var(--body-text); line-height: 1.75; font-weight: 300; }
+    .fact-bullet { color: var(--gold); font-size: 12px; margin-top: 5px; flex-shrink: 0; }
+
+    .anecdote-box { background: rgba(201,151,58,.06); border: 1px solid rgba(201,151,58,.15); border-radius: 10px; padding: 18px 20px; font-size: 15px; line-height: 1.85; color: var(--body-text); font-weight: 300; }
+
+    blockquote.retenir { margin-left: 36px; border-left: 3px solid var(--gold); padding-left: 20px; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-style: italic; color: var(--gold-light); line-height: 1.7; }
+
+    .back-btn { background: none; border: 1px solid #252525; border-radius: 8px; padding: 10px 18px; color: #666; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: border-color .15s; }
+    .back-btn:hover { border-color: #444; color: #999; }
+
+    /* ── HISTORY ── */
+    .hist-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+    .hist-sub { font-size: 14px; color: #555; margin-bottom: 36px; }
+    .hist-list { display: flex; flex-direction: column; gap: 6px; }
+    .hist-item {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 16px; border-radius: 10px;
+      border: 1px solid var(--border); cursor: pointer;
+      transition: background .15s;
+      animation: fadeUp .3s ease both;
+    }
+    .hist-item:hover { background: rgba(255,255,255,.04); }
+    .hist-icon { font-size: 22px; flex-shrink: 0; }
+    .hist-info { flex: 1; min-width: 0; }
+    .hist-item-title { font-size: 14px; font-weight: 500; color: #e8e4dd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+    .hist-item-meta { font-size: 12px; color: #444; margin-top: 2px; display: block; }
+    .hist-arrow { color: #333; font-size: 16px; flex-shrink: 0; }
+    .hist-empty { color: #444; text-align: center; padding-top: 60px; font-size: 15px; }
+
+    /* ── SETTINGS ── */
+    .settings-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 32px; }
+    .settings-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .settings-row label { font-size: 12px; color: var(--gold); letter-spacing: .12em; font-weight: 600; }
+    .btn-danger { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: #f87171; border-radius: 8px; padding: 10px 18px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; transition: background .15s; }
+    .btn-danger:hover { background: rgba(248,113,113,.2); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <button class="nav-logo" onclick="goHome()">
+    <span>◆</span> EST-CE QUE VOUS LE SAVIEZ-VOUS
+  </button>
+  <div class="nav-links">
+    <button class="nav-btn active" id="nav-home" onclick="showView('home')">Accueil</button>
+    <button class="nav-btn" id="nav-history" onclick="showView('history')">Historique</button>
+    <button class="nav-btn" id="nav-settings" onclick="showView('settings')">⚙</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- SETUP -->
+  <div id="setup-view" class="view" style="display:none">
+    <div class="setup-icon">◆</div>
+    <h1 class="setup-title">Est-ce que vous<br><em>le saviez-vous ?</em></h1>
+    <p class="setup-desc">Une leçon de culture générale générée par l'IA — 5 minutes par jour, un sujet précis, une anecdote qui tue.</p>
+    <div class="setup-input-wrap">
+      <label>CLÉ API ANTHROPIC</label>
+      <input class="setup-input" id="api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      <p class="setup-hint">Ta clé reste stockée uniquement sur ton téléphone, elle n'est jamais envoyée ailleurs.<br>Tu peux en créer une gratuitement sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+    </div>
+    <button class="btn-primary" onclick="saveApiKey()">C'est parti →</button>
+  </div>
+
+  <!-- HOME -->
+  <div id="home-view" class="view" style="display:none">
+    <p class="eyebrow">5 MINUTES • CHAQUE JOUR</p>
+    <h1 class="main-title">Est-ce que vous<br><em>le saviez-vous ?</em></h1>
+    <p class="main-sub">Choisis une catégorie. Reçois une leçon sur mesure — un sujet précis, des faits fascinants, une anecdote qui tue.</p>
+
+    <div id="error-box" class="error-box" style="display:none"></div>
+
+    <div class="cat-grid" id="cat-grid"></div>
+
+    <div class="loading-row" id="loading-row" style="display:none">
+      <div class="spinner"></div>
+      <span style="font-size:14px;color:#666">Génération en cours…</span>
+    </div>
+
+    <div id="last-card" class="last-card" style="display:none" onclick="openLastLesson()">
+      <span class="last-tag">DERNIÈRE LEÇON</span>
+      <span class="last-title" id="last-title-text"></span>
+      <span class="last-arrow">→</span>
+    </div>
+  </div>
+
+  <!-- LESSON -->
+  <div id="lesson-view" class="view" style="display:none">
+    <div class="lesson-meta">
+      <span class="cat-pill" id="l-cat"></span>
+      <span class="diff-pill" id="l-diff"></span>
+      <span class="lesson-date" id="l-date"></span>
+    </div>
+    <h1 class="lesson-title" id="l-title"></h1>
+    <p class="lesson-sub" id="l-sub"></p>
+    <div class="keywords" id="l-keywords"></div>
+    <hr class="divider" />
+
+    <div class="block" id="l-contexte-block">
+      <div class="block-header"><span class="block-num">01</span><h2 class="block-title">Le contexte</h2></div>
+      <div class="block-body" id="l-contexte"></div>
+    </div>
+
+    <div class="block" id="l-faits-block">
+      <div class="block-header"><span class="block-num">02</span><h2 class="block-title">Ce que tu dois savoir</h2></div>
+      <ul class="facts-list" id="l-faits"></ul>
+    </div>
+
+    <div class="block" id="l-anecdote-block">
+      <div class="block-header"><span class="block-num">03</span><h2 class="block-title">L'anecdote qui tue</h2></div>
+      <div class="anecdote-box" id="l-anecdote"></div>
+    </div>
+
+    <div class="block" id="l-retenir-block">
+      <div class="block-header"><span class="block-num">04</span><h2 class="block-title">À retenir</h2></div>
+      <blockquote class="retenir" id="l-retenir"></blockquote>
+    </div>
+
+    <hr class="divider" />
+    <button class="back-btn" onclick="showView('home')">← Choisir un autre sujet</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history-view" class="view" style="display:none">
+    <h2 class="hist-title">Tes leçons</h2>
+    <p class="hist-sub" id="hist-count"></p>
+    <div class="hist-list" id="hist-list"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settings-view" class="view" style="display:none">
+    <h2 class="settings-title">Paramètres</h2>
+    <div class="settings-row">
+      <label>CLÉ API ANTHROPIC</label>
+      <input class="setup-input" id="settings-api-key" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      <button class="btn-primary" style="margin-top:4px" onclick="updateApiKey()">Mettre à jour</button>
+    </div>
+    <div class="settings-row" style="margin-top:32px">
+      <label>DONNÉES</label>
+      <button class="btn-danger" onclick="clearHistory()">Effacer tout l'historique</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CATEGORIES = [
+  { id:"histoire",    label:"Histoire",      icon:"⚔️" },
+  { id:"science",     label:"Science",       icon:"🔬" },
+  { id:"philosophie", label:"Philosophie",   icon:"🧠" },
+  { id:"geographie",  label:"Géographie",    icon:"🌍" },
+  { id:"cinema",      label:"Cinéma",        icon:"🎬" },
+  { id:"musique",     label:"Musique",       icon:"🎵" },
+  { id:"art",         label:"Art",           icon:"🎨" },
+  { id:"linguistique",label:"Langue & Mots", icon:"📖" },
+  { id:"economie",    label:"Économie",      icon:"💹" },
+  { id:"psychologie", label:"Psychologie",   icon:"🪞" },
+  { id:"mythologie",  label:"Mythologie",    icon:"⚡" },
+  { id:"sport",       label:"Sport & Records",icon:"🏆"},
+];
+
+const SYSTEM_PROMPT = `Tu es un professeur de culture générale brillant. Génère une leçon structurée en JSON strict.
+RÉPONDS UNIQUEMENT AVEC DU JSON VALIDE. Pas de texte avant, pas de texte après, pas de balises markdown.
+Structure exacte :
+{
+  "titre": "Titre court et accrocheur",
+  "soustitre": "Une phrase d accroche intrigante",
+  "icone": "un seul emoji",
+  "difficulte": "débutant",
+  "mot_cle": "mot1, mot2, mot3",
+  "contexte": "2-3 paragraphes séparés par deux sauts de ligne sur le contexte historique ou culturel.",
+  "faits": ["fait 1", "fait 2", "fait 3", "fait 4", "fait 5"],
+  "anecdote": "Une anecdote surprenante et méconnue en 1 paragraphe.",
+  "retenir": "Une seule phrase mémorable qui résume tout."
+}`;
+
+// ── STATE ──
+let apiKey = localStorage.getItem('svs_api_key') || '';
+let history = JSON.parse(localStorage.getItem('svs_history') || '[]');
+let currentLesson = null;
+let isLoading = false;
+
+// ── INIT ──
+function init() {
+  buildCatGrid();
+  if (!apiKey) {
+    showView('setup');
+  } else {
+    showView('home');
+  }
+}
+
+function buildCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach((cat, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.id = 'cat-' + cat.id;
+    btn.style.animationDelay = (i * 0.04) + 's';
+    btn.innerHTML = `<span class="cat-icon" id="icon-${cat.id}">${cat.icon}</span><span class="cat-label">${cat.label}</span>`;
+    btn.onclick = () => generateLesson(cat);
+    grid.appendChild(btn);
+  });
+}
+
+// ── VIEWS ──
+const VIEWS = ['setup', 'home', 'lesson', 'history', 'settings'];
+function showView(name) {
+  VIEWS.forEach(v => {
+    document.getElementById(v + '-view').style.display = 'none';
+    const nb = document.getElementById('nav-' + v);
+    if (nb) nb.classList.remove('active');
+  });
+  document.getElementById(name + '-view').style.display = 'block';
+  const nb = document.getElementById('nav-' + name);
+  if (nb) nb.classList.add('active');
+  window.scrollTo(0, 0);
+
+  if (name === 'home') refreshLastCard();
+  if (name === 'history') renderHistory();
+  if (name === 'settings') {
+    document.getElementById('settings-api-key').value = apiKey;
+  }
+}
+function goHome() { showView('home'); }
+
+// ── API KEY ──
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-')) {
+    alert('La clé doit commencer par "sk-"');
+    return;
+  }
+  apiKey = val;
+  localStorage.setItem('svs_api_key', apiKey);
+  showView('home');
+}
+function updateApiKey() {
+  const val = document.getElementById('settings-api-key').value.trim();
+  if (!val.startsWith('sk-')) { alert('Clé invalide'); return; }
+  apiKey = val;
+  localStorage.setItem('svs_api_key', apiKey);
+  alert('Clé mise à jour ✓');
+}
+
+// ── GENERATE ──
+async function generateLesson(cat) {
+  if (isLoading) return;
+  isLoading = true;
+  setLoading(true, cat.id);
+  hideError();
+
+  const recentTitles = history.slice(0, 8).map(h => h.titre).join(', ');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{
+          role: 'user',
+          content: `Génère une leçon de culture générale sur un sujet PRÉCIS et MÉCONNU dans la catégorie "${cat.label}".
+Évite les sujets trop évidents. Choisis quelque chose de fascinant, contre-intuitif ou surprenant.
+${recentTitles ? '\nSujets déjà traités à éviter : ' + recentTitles : ''}
+Réponds UNIQUEMENT avec le JSON. Aucun autre texte.`
+        }]
+      })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'Erreur HTTP ' + res.status);
+    }
+
+    const data = await res.json();
+    const rawText = (data.content || []).find(b => b.type === 'text')?.text || '';
+
+    let parsed;
+    try {
+      let clean = rawText.trim().replace(/^```json\s*/i,'').replace(/\s*```$/,'').trim().replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+      parsed = JSON.parse(clean);
+    } catch {
+      throw new Error('Réponse mal formée. Réessaie !');
+    }
+
+    if (!parsed.titre) throw new Error('Contenu incomplet. Réessaie !');
+
+    const lesson = {
+      ...parsed,
+      categorie_id: cat.id,
+      categorie_label: cat.label,
+      categorie_icon: cat.icon,
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+
+    history.unshift(lesson);
+    if (history.length > 40) history = history.slice(0, 40);
+    localStorage.setItem('svs_history', JSON.stringify(history));
+
+    openLesson(lesson);
+  } catch(e) {
+    showError(e.message || 'Erreur inconnue. Réessaie !');
+  } finally {
+    isLoading = false;
+    setLoading(false, null);
+  }
+}
+
+// ── LESSON RENDER ──
+function openLesson(lesson) {
+  currentLesson = lesson;
+
+  const diffColors = { 'débutant': '#4ade80', 'intermédiaire': '#fbbf24', 'avancé': '#f87171' };
+  const dc = diffColors[lesson.difficulte] || '#aaa';
+
+  document.getElementById('l-cat').textContent = (lesson.categorie_icon || '') + ' ' + (lesson.categorie_label || '');
+  const dp = document.getElementById('l-diff');
+  dp.textContent = lesson.difficulte || '';
+  dp.style.color = dc;
+  dp.style.background = dc + '18';
+  dp.style.border = '1px solid ' + dc + '33';
+  document.getElementById('l-date').textContent = lesson.date || '';
+  document.getElementById('l-title').textContent = (lesson.icone || '') + ' ' + (lesson.titre || '');
+  document.getElementById('l-sub').textContent = lesson.soustitre || '';
+
+  // keywords
+  const kw = document.getElementById('l-keywords');
+  kw.innerHTML = '';
+  if (lesson.mot_cle) {
+    lesson.mot_cle.split(/[,·]/).forEach(k => {
+      const span = document.createElement('span');
+      span.className = 'kw';
+      span.textContent = k.trim();
+      kw.appendChild(span);
+    });
+  }
+
+  // contexte
+  const ctx = document.getElementById('l-contexte');
+  ctx.innerHTML = '';
+  if (lesson.contexte) {
+    lesson.contexte.split(/\n\n+/).filter(Boolean).forEach(p => {
+      const el = document.createElement('p');
+      el.textContent = p;
+      ctx.appendChild(el);
+    });
+    document.getElementById('l-contexte-block').style.display = 'block';
+  } else {
+    document.getElementById('l-contexte-block').style.display = 'none';
+  }
+
+  // faits
+  const fl = document.getElementById('l-faits');
+  fl.innerHTML = '';
+  if (lesson.faits?.length) {
+    lesson.faits.forEach(f => {
+      const li = document.createElement('li');
+      li.className = 'fact-item';
+      li.innerHTML = `<span class="fact-bullet">▸</span><span>${f}</span>`;
+      fl.appendChild(li);
+    });
+    document.getElementById('l-faits-block').style.display = 'block';
+  } else {
+    document.getElementById('l-faits-block').style.display = 'none';
+  }
+
+  // anecdote
+  if (lesson.anecdote) {
+    document.getElementById('l-anecdote').textContent = lesson.anecdote;
+    document.getElementById('l-anecdote-block').style.display = 'block';
+  } else {
+    document.getElementById('l-anecdote-block').style.display = 'none';
+  }
+
+  // retenir
+  if (lesson.retenir) {
+    document.getElementById('l-retenir').textContent = lesson.retenir;
+    document.getElementById('l-retenir-block').style.display = 'block';
+  } else {
+    document.getElementById('l-retenir-block').style.display = 'none';
+  }
+
+  showView('lesson');
+}
+
+function openLastLesson() {
+  if (history.length > 0) openLesson(history[0]);
+}
+
+// ── HISTORY RENDER ──
+function renderHistory() {
+  const count = document.getElementById('hist-count');
+  count.textContent = history.length + ' leçon' + (history.length !== 1 ? 's' : '') + ' au compteur';
+  const list = document.getElementById('hist-list');
+  list.innerHTML = '';
+  if (!history.length) {
+    list.innerHTML = '<p class="hist-empty">Aucune leçon encore. Lance-toi !</p>';
+    return;
+  }
+  history.forEach((h, i) => {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    div.style.animationDelay = (i * 0.04) + 's';
+    div.innerHTML = `
+      <span class="hist-icon">${h.icone || ''}</span>
+      <div class="hist-info">
+        <span class="hist-item-title">${h.titre || ''}</span>
+        <span class="hist-item-meta">${h.categorie_label || ''} · ${h.date || ''}</span>
+      </div>
+      <span class="hist-arrow">→</span>`;
+    div.onclick = () => openLesson(h);
+    list.appendChild(div);
+  });
+}
+
+// ── LAST CARD ──
+function refreshLastCard() {
+  const card = document.getElementById('last-card');
+  if (history.length > 0) {
+    document.getElementById('last-title-text').textContent = (history[0].icone || '') + ' ' + (history[0].titre || '');
+    card.style.display = 'flex';
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+// ── UI HELPERS ──
+function setLoading(on, catId) {
+  document.getElementById('loading-row').style.display = on ? 'flex' : 'none';
+  CATEGORIES.forEach(cat => {
+    const btn = document.getElementById('cat-' + cat.id);
+    const ico = document.getElementById('icon-' + cat.id);
+    if (!btn) return;
+    btn.disabled = on;
+    if (on && cat.id === catId) {
+      ico.textContent = '⟳';
+      ico.classList.add('spinning');
+      btn.classList.add('loading-this');
+    } else {
+      ico.textContent = cat.icon;
+      ico.classList.remove('spinning');
+      btn.classList.remove('loading-this');
+    }
+  });
+}
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = '⚠️ ' + msg;
+  box.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('error-box').style.display = 'none';
+}
+function clearHistory() {
+  if (confirm('Effacer tout l\'historique ?')) {
+    history = [];
+    localStorage.removeItem('svs_history');
+    alert('Historique effacé.');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
